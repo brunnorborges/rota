@@ -18,10 +18,18 @@ function load(){
     if(!S.settings.ritualSteps||!S.settings.ritualSteps.length)S.settings.ritualSteps=DEF_RITUAL.slice();
     if(!Array.isArray(S.vocab))S.vocab=[];
     if(!Array.isArray(S.hiddenTerms))S.hiddenTerms=[];
+    migrate();
     return;}}catch(e){}
   S=defaults();save();
 }
 function save(){try{localStorage.setItem(K,JSON.stringify(S));}catch(e){}}
+function migrate(){
+  /* v3.1.2 · strategy change: Mindset 2 becomes the base book until ~Sep, Level 3 after */
+  const ren=b=>{if(b&&b.name==='IELTS Writing · Mindset 3')b.name='IELTS Writing · Mindset 2 unit';};
+  Object.values(S.settings.template||{}).forEach(arr=>(arr||[]).forEach(ren));
+  Object.values(S.days||{}).forEach(d=>{if(d&&d.tpl)d.tpl.forEach(ren);});
+  save();
+}
 
 /* ================= UTIL ================= */
 const $=s=>document.querySelector(s);

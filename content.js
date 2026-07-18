@@ -318,7 +318,7 @@ function wdBase(){return[
  {id:'b4',  start:'10:30',end:'11:30',name:'Vocabulary lab · Anki + collocations',type:'study'},
  {id:'musc',start:'11:45',end:'13:15',name:'Strength training',type:'training'},
  {id:'b5',  start:'14:15',end:'15:15',name:'Speaking · shadowing + recording',type:'study'},
- {id:'b6',  start:'15:30',end:'16:45',name:'IELTS Writing · Mindset 3',type:'study'},
+ {id:'b6',  start:'15:30',end:'16:45',name:'IELTS Writing · Mindset 2 unit',type:'study'},
  {id:'card',start:'18:00',end:'19:00',name:'Hyrox / CrossFit conditioning',type:'training'},
  {id:'b7',  start:'20:45',end:'21:45',name:'Magoosh timed section',type:'study'},
  {id:'ess', start:'21:45',end:'22:15',name:'The Evening Essay + shutdown',type:'routine'}
