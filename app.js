@@ -446,9 +446,9 @@ function runClaude(obj,day,kind){
   .then(({ok,j})=>{
     obj.busyAI=false;
     if(!ok){throw new Error((j.error&&j.error.message)||'API error');}
-    let raw=(j.content&&j.content[0]&&j.content[0].text)||'';
+    let raw=(j.content||[]).filter(c=>c&&typeof c.text==='string').map(c=>c.text).join('\n');
     const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
-    if(a<0||b<0)throw new Error('Unexpected reply format');
+    if(a<0||b<=a)throw new Error('Unexpected reply format');
     const f=JSON.parse(raw.slice(a,b+1));
     obj.fb={band:f.band||'',errors:Array.isArray(f.errors)?f.errors:[],rewrite:f.rewrite||'',note:f.note||''};
     save();rerender(day,kind);
