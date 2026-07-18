@@ -46,8 +46,15 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 function wordCount(t){return (String(t).trim().match(/\S+/g)||[]).length;}
 
 /* ================= DAY ================= */
+function maybeSyncTpl(day,key){
+  /* days the user has not touched follow the weekly template live */
+  if(day.custom)return;
+  if(Object.keys(day.checks||{}).length)return;
+  const cur=JSON.stringify(S.settings.template[dowKey(key)]||[]);
+  if(JSON.stringify(day.tpl)!==cur){day.tpl=JSON.parse(cur);save();}
+}
 function ensureDay(key){
-  if(S.days[key])return S.days[key];
+  if(S.days[key]){maybeSyncTpl(S.days[key],key);return S.days[key];}
   const n=Math.max(1,dayN(key));
   const day={
     tpl:JSON.parse(JSON.stringify(S.settings.template[dowKey(key)]||[])),
@@ -276,7 +283,8 @@ function blockState(day,b){
 const TYPE_LABEL={study:'<span class="st">Study</span>',training:'<span class="tr">Training</span>',routine:'<span class="rt">Routine</span>'};
 function renderDaywork(day){
   const sc=dayScore(day);
-  let h='<div class="shead"><span class="k ox">The Day’s Work</span><span class="snum">IV</span></div>'+
+  const wd=DOWS[parseKey(VK).getDay()];
+  let h='<div class="shead"><span class="k ox">The Day’s Work · '+wd+'</span><span class="snum">IV</span></div>'+
     '<div class="covline" style="margin:0 0 10px"><span class="k">'+sc.d+' of '+sc.t+' blocks complete</span>'+
     '<button class="k" id="dwEdit" style="color:var(--navy)">'+(editDay?'✓ Done editing':'✎ Edit schedule')+'</button></div>';
   if(!editDay){
@@ -316,23 +324,23 @@ function renderDaywork(day){
       const i=+bt.dataset.i,j=bt.dataset.a==='up'?i-1:i+1;
       if(j<0||j>=day.tpl.length)return;
       [day.tpl[i],day.tpl[j]]=[day.tpl[j],day.tpl[i]];
-      save();renderDaywork(day);
+      day.custom=true;save();renderDaywork(day);
     });
     $$('#daywork .tebtn[data-a="del"]').forEach(bt=>bt.onclick=()=>{
       const i=+bt.dataset.i;
       if(!confirm('Remove “'+day.tpl[i].name+'” from today?'))return;
       delete day.checks[day.tpl[i].id];
-      day.tpl.splice(i,1);save();renderDaywork(day);
+      day.tpl.splice(i,1);day.custom=true;save();renderDaywork(day);
     });
     $$('#daywork .editrow input,#daywork .editrow select').forEach(el=>el.onchange=()=>{
-      day.tpl[+el.dataset.i][el.dataset.f]=el.value;save();
+      day.tpl[+el.dataset.i][el.dataset.f]=el.value;day.custom=true;save();
     });
     $('#dwAdd').onclick=()=>{
       day.tpl.push({id:'x'+Date.now().toString(36),start:'12:00',end:'13:00',name:'New block',type:'study'});
-      save();renderDaywork(day);
+      day.custom=true;save();renderDaywork(day);
     };
     $('#dwSort').onclick=()=>{
-      day.tpl.sort((a,b)=>mins(a.start)-mins(b.start));save();renderDaywork(day);
+      day.tpl.sort((a,b)=>mins(a.start)-mins(b.start));day.custom=true;save();renderDaywork(day);
     };
   }
 }
