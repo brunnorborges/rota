@@ -11,11 +11,13 @@ function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 function defaults(){return{
   settings:{ieltsDate:'2026-09-19',cycleStart:todayISO(),ritualSteps:DEF_RITUAL.slice(),
     template:defaultTemplate(),apiKey:'',model:'claude-sonnet-5'},
-  days:{}
+  days:{},vocab:[],hiddenTerms:[]
 };}
 function load(){
   try{const raw=localStorage.getItem(K);if(raw){S=Object.assign(defaults(),JSON.parse(raw));
     if(!S.settings.ritualSteps||!S.settings.ritualSteps.length)S.settings.ritualSteps=DEF_RITUAL.slice();
+    if(!Array.isArray(S.vocab))S.vocab=[];
+    if(!Array.isArray(S.hiddenTerms))S.hiddenTerms=[];
     return;}}catch(e){}
   S=defaults();save();
 }
@@ -363,11 +365,101 @@ function openBlockSheet(day,id){
   const bc=$('#bkClear');if(bc)bc.onclick=()=>{delete day.checks[id];save();closeSheet();renderDaywork(day);renderCover(day);};
 }
 
+/* ================= RENDER · NEW VOCABULARY ================= */
+function renderVocab(){
+  const mine=S.vocab.map((v,i)=>({v,i})).filter(o=>o.v.k===VK);
+  let h='<div class="shead"><span class="k ox">New Vocabulary of the Day</span><span class="snum">V</span></div>'+
+    '<div class="artsub" style="margin-bottom:10px">Words you met today, worth keeping. They all build The Lexicon — your private dictionary.</div>'+
+    '<div class="vform">'+
+      '<input class="vw" id="vwWord" placeholder="Word or phrase" autocomplete="off" maxlength="60">'+
+      '<input class="vn" id="vwNote" placeholder="Meaning, example or translation (optional)" autocomplete="off" maxlength="160">'+
+      '<button class="btn" id="vwAdd">Add</button>'+
+    '</div>';
+  if(mine.length){
+    h+='<div style="margin-top:14px">'+mine.map(o=>
+      '<div class="vrow"><span class="vwd">'+esc(o.v.w)+'</span>'+
+      '<span class="vnt">'+esc(o.v.note||'')+'</span>'+
+      '<button class="vdel" data-i="'+o.i+'" aria-label="remove">✕</button></div>').join('')+'</div>';
+  }
+  h+='<div class="k" style="margin-top:12px">'+S.vocab.length+' word'+(S.vocab.length===1?'':'s')+' collected · open the Lexicon below</div>';
+  $('#vocab').innerHTML=h;
+  const addFn=()=>{
+    const w=$('#vwWord').value.trim();
+    if(!w){toast('Type a word first.');return;}
+    S.vocab.push({w,note:$('#vwNote').value.trim(),k:VK});
+    save();renderVocab();toast('“'+w+'” added to the Lexicon.');
+    const el=$('#vwWord');if(el){el.value='';el.focus();}
+  };
+  $('#vwAdd').onclick=addFn;
+  $('#vwWord').onkeydown=e=>{if(e.key==='Enter')addFn();};
+  $$('#vocab .vdel').forEach(b=>b.onclick=()=>{
+    S.vocab.splice(+b.dataset.i,1);save();renderVocab();
+  });
+}
+
+/* ================= RENDER · LEXICON ================= */
+function lexEntries(){
+  const seen={},out=[];
+  S.vocab.forEach((v,i)=>{
+    const key=v.w.toLowerCase();
+    if(seen[key])return;seen[key]=1;
+    out.push({w:v.w,note:v.note||'',src:'you',date:v.k,idx:i});
+  });
+  elapsedKeys().forEach(k=>{
+    const d=S.days[k];if(!d)return;
+    (EDITIONS[d.ed]||{w:[]}).w.forEach(tm=>{
+      const key=tm.w.toLowerCase();
+      if(seen[key]||S.hiddenTerms.includes(key))return;seen[key]=1;
+      out.push({w:tm.w,note:tm.d,src:'edition',date:k,ed:Math.max(1,dayN(k))});
+    });
+  });
+  out.sort((a,b)=>a.w.toLowerCase().localeCompare(b.w.toLowerCase()));
+  return out;
+}
+function renderLexicon(){
+  const es=lexEntries();
+  const yours=es.filter(e=>e.src==='you').length;
+  let h='<div class="jhero"><span class="k ox">A private dictionary</span>'+
+    '<div class="arttitle serif">The Lexicon</div>'+
+    '<div class="artsub">'+es.length+' living entries · '+yours+' collected by you · '+S.hiddenTerms.length+' mastered and retired</div>'+
+    '<div class="artsub" style="font-size:13px">Delete an entry once it is truly yours — a shrinking dictionary is a growing mind.</div></div>';
+  if(!es.length){
+    h+='<div class="sect"><p class="keynote">Nothing here yet. Add words in “New Vocabulary of the Day”, and each edition’s three terms will file themselves here automatically.</p></div>';
+  }else{
+    let letter='';
+    es.forEach(e=>{
+      const L=e.w[0].toUpperCase();
+      if(L!==letter){
+        if(letter)h+='</div>';
+        letter=L;
+        h+='<div class="lexletter">'+esc(L)+'<small>'+es.filter(x=>x.w[0].toUpperCase()===L).length+' entr'+(es.filter(x=>x.w[0].toUpperCase()===L).length===1?'y':'ies')+'</small></div><div>';
+      }
+      h+='<div class="vrow"><span class="vwd">'+esc(e.w)+'</span>'+
+        '<span class="vnt">'+esc(e.note)+'</span>'+
+        '<span class="lexsrc'+(e.src==='you'?' you':'')+'">'+(e.src==='you'?'yours · '+fmtShort(e.date):'No. '+e.ed)+'</span>'+
+        '<button class="vdel" data-w="'+esc(e.w.toLowerCase())+'" data-src="'+e.src+'" data-idx="'+(e.idx!==undefined?e.idx:'')+'" aria-label="retire">✕</button></div>';
+    });
+    h+='</div>';
+  }
+  $('#lexmain').innerHTML=h;
+  $$('#lexmain .vdel').forEach(b=>b.onclick=()=>{
+    if(!confirm('Retire “'+b.dataset.w+'” from the Lexicon? (Do it when the word is consolidated.)'))return;
+    if(b.dataset.src==='you'){
+      const i=+b.dataset.idx;
+      if(!isNaN(i)&&S.vocab[i]&&S.vocab[i].w.toLowerCase()===b.dataset.w)S.vocab.splice(i,1);
+      else S.vocab=S.vocab.filter(v=>v.w.toLowerCase()!==b.dataset.w);
+    }else{
+      S.hiddenTerms.push(b.dataset.w);
+    }
+    save();renderLexicon();toast('Retired. Well earned.');
+  });
+}
+
 /* ================= RENDER · EVENING ESSAY ================= */
 function renderEssay(day){
   const es=day.essay;
   const pr=PROMPTS[es.pi]||PROMPTS[0];
-  let h='<div class="shead"><span class="k ox">The Evening Essay</span><span class="snum">V</span></div>'+
+  let h='<div class="shead"><span class="k ox">The Evening Essay</span><span class="snum">VI</span></div>'+
     '<div class="esswrap">'+
     '<span class="esscat">'+esc(pr.c)+' · Writing Task 2 style</span>'+
     '<div class="essq">'+esc(pr.q)+'</div>'+
@@ -712,18 +804,21 @@ function showView(v){
   curView=v;
   $('#vToday').classList.toggle('hidden',v!=='today');
   $('#vJourney').classList.toggle('hidden',v!=='journey');
+  $('#vLexicon').classList.toggle('hidden',v!=='lexicon');
   $('#vSettings').classList.toggle('hidden',v!=='settings');
   $('#nav').classList.toggle('hidden',v==='settings');
   $('#navToday').classList.toggle('on',v==='today');
   $('#navJourney').classList.toggle('on',v==='journey');
+  $('#navLex').classList.toggle('on',v==='lexicon');
   if(v==='journey')renderJourney();
+  if(v==='lexicon')renderLexicon();
   if(v==='today')renderAll();
   window.scrollTo(0,0);
 }
 function renderAll(){
   const day=ensureDay(VK);
   renderMast();renderDayNav();renderCover(day);renderMorning(day);
-  renderIntention(day);renderRitual(day);renderDaywork(day);renderEssay(day);
+  renderIntention(day);renderRitual(day);renderDaywork(day);renderVocab();renderEssay(day);
   $('#footline').textContent=FOOTLINES[Math.max(0,dayN(VK))%FOOTLINES.length];
 }
 
@@ -743,6 +838,7 @@ function init(){
   setTimeout(()=>{const c=$('#shClose');if(c)c.onclick=closeSheet;},0);
   $('#navToday').onclick=()=>showView('today');
   $('#navJourney').onclick=()=>showView('journey');
+  $('#navLex').onclick=()=>showView('lexicon');
   $('#dPrev').onclick=()=>{if(diffDays(S.settings.cycleStart,VK)>0){VK=addDays(VK,-1);editDay=false;renderAll();}};
   $('#dNext').onclick=()=>{if(VK!==todayKey()){VK=addDays(VK,1);editDay=false;renderAll();}};
   $('#sIelts').onchange=e=>{S.settings.ieltsDate=e.target.value;save();};
