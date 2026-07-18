@@ -378,7 +378,7 @@ function renderVocab(){
   if(mine.length){
     h+='<div style="margin-top:14px">'+mine.map(o=>
       '<div class="vrow"><span class="vwd">'+esc(o.v.w)+'</span>'+
-      '<span class="vnt">'+esc(o.v.note||'')+'</span>'+
+      '<span class="vnt">'+(o.v.note?esc(o.v.note):'<button class="k navy vdef" data-i="'+o.i+'">↻ define</button>')+'</span>'+
       '<button class="vdel" data-i="'+o.i+'" aria-label="remove">✕</button></div>').join('')+'</div>';
   }
   h+='<div class="k" style="margin-top:12px">'+S.vocab.length+' word'+(S.vocab.length===1?'':'s')+' collected · open the Lexicon below</div>';
@@ -386,8 +386,10 @@ function renderVocab(){
   const addFn=()=>{
     const w=$('#vwWord').value.trim();
     if(!w){toast('Type a word first.');return;}
-    S.vocab.push({w,note:$('#vwNote').value.trim(),k:VK});
+    const entry={w,note:$('#vwNote').value.trim(),k:VK};
+    S.vocab.push(entry);
     save();renderVocab();toast('“'+w+'” added to the Lexicon.');
+    if(!entry.note)defineWord(entry);
     const el=$('#vwWord');if(el){el.value='';el.focus();}
   };
   $('#vwAdd').onclick=addFn;
@@ -395,6 +397,50 @@ function renderVocab(){
   $$('#vocab .vdel').forEach(b=>b.onclick=()=>{
     S.vocab.splice(+b.dataset.i,1);save();renderVocab();
   });
+  $$('#vocab .vdef').forEach(b=>b.onclick=()=>{
+    const e=S.vocab[+b.dataset.i];if(e)defineWord(e);
+  });
+}
+
+/* ================= AUTO-DEFINE ================= */
+function defineWord(entry){
+  entry.note='defining…';save();refreshVocabViews();
+  const done=note=>{entry.note=note;save();refreshVocabViews();};
+  const fail=()=>{entry.note='';save();refreshVocabViews();toast('No definition found — add your own note.');};
+  if(S.settings.apiKey){
+    fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:S.settings.model||'claude-sonnet-5',max_tokens:300,
+        messages:[{role:'user',content:'Define the English word or phrase "'+entry.w+'" for a Brazilian IELTS student (target Band 7). Respond ONLY with strict JSON, no markdown: {"note":"concise meaning plus when to use it in IELTS writing or speaking, under 140 characters","example":"one natural example sentence"}'}]})})
+    .then(r=>r.json().then(j=>({ok:r.ok,j})))
+    .then(({ok,j})=>{
+      if(!ok)throw 0;
+      const raw=(j.content||[]).filter(c=>c&&typeof c.text==='string').map(c=>c.text).join('\n');
+      const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
+      if(a<0||b<=a)throw 0;
+      const f=JSON.parse(raw.slice(a,b+1));
+      done((f.note||'').trim()+(f.example?' · e.g. '+f.example.trim():''));
+    })
+    .catch(()=>dictLookup(entry.w,done,fail));
+  }else dictLookup(entry.w,done,fail);
+}
+function dictLookup(w,done,fail){
+  fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w.toLowerCase()))
+  .then(r=>{if(!r.ok)throw 0;return r.json();})
+  .then(j=>{
+    const m=j&&j[0]&&j[0].meanings&&j[0].meanings[0];
+    const d=m&&m.definitions&&m.definitions[0];
+    if(!d)throw 0;
+    let note='('+(m.partOfSpeech||'')+') '+d.definition;
+    if(d.example)note+=' · e.g. '+d.example;
+    done(note);
+  })
+  .catch(fail);
+}
+function refreshVocabViews(){
+  if(curView==='today')renderVocab();
+  else if(curView==='lexicon')renderLexicon();
 }
 
 /* ================= RENDER · LEXICON ================= */
