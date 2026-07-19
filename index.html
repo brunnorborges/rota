@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="The London Review">
 <meta name="theme-color" content="#F7F4EE">
-<title>The London Review · Road to Band 7.0</title><!-- v3.1.2 -->
+<title>The London Review · Road to Band 7.0</title><!-- v3.2.0 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -250,6 +250,30 @@ main{max-width:600px;margin:0 auto;padding:0 18px calc(86px + env(safe-area-inse
 .lexsrc{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;white-space:nowrap}
 .lexsrc.you{color:var(--navy)}
 
+/* ---------- writing desk ---------- */
+.wmonth{font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:600;
+  border-bottom:2px solid var(--ink);padding:22px 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+.wmonth small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:600;font-family:'Inter',sans-serif}
+.wentry{width:100%;display:flex;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.wentry:last-child{border-bottom:0}
+.wband{flex:0 0 54px;text-align:center;font-family:'Fraunces',Georgia,serif;font-size:23px;font-weight:600;color:var(--ox);border-right:1px solid var(--line);padding-right:10px}
+.wband small{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600;font-family:'Inter',sans-serif}
+.winfo{flex:1;min-width:0}
+.wprompt{font-family:'Fraunces',Georgia,serif;font-size:15px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wmeta{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600;margin-top:3px}
+.wmeta .t1{color:var(--ok)}.wmeta .t2{color:var(--navy)}
+.wform label{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ink2);margin:16px 0 6px}
+.wform input,.wform select,.wform textarea{width:100%}
+.wform textarea{min-height:110px;font-family:'Fraunces',Georgia,serif;font-size:15px}
+.wform textarea.small{min-height:70px}
+.bandsrow{display:flex;gap:8px;flex-wrap:wrap}
+.bandsrow>div{flex:1;min-width:70px}
+.bandsrow input{text-align:center}
+.wview h4{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--ox);margin:18px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.wview .artbody{font-size:15px}
+.critline{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:6px}
+.critline b{font-family:'Fraunces',Georgia,serif;color:var(--ink);font-size:14px}
+
 /* ---------- settings ---------- */
 .frow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
 .frow label{font-size:14px}
@@ -337,6 +361,11 @@ textarea#ioArea{width:100%;height:110px;font-size:11px;font-family:ui-monospace,
   <main id="lexmain"></main>
 </div>
 
+<!-- ============ WRITING DESK ============ -->
+<div id="vWriting" class="hidden">
+  <main id="wmain"></main>
+</div>
+
 <!-- ============ SETTINGS ============ -->
 <div id="vSettings" class="hidden">
   <main>
@@ -391,6 +420,7 @@ textarea#ioArea{width:100%;height:110px;font-size:11px;font-family:ui-monospace,
 <nav id="nav">
   <div class="navin">
     <button class="navb on" id="navToday">Today</button>
+    <button class="navb" id="navWrite">Writing</button>
     <button class="navb" id="navLex">Lexicon</button>
     <button class="navb" id="navJourney">Journey</button>
   </div>
@@ -401,6 +431,6 @@ textarea#ioArea{width:100%;height:110px;font-size:11px;font-family:ui-monospace,
 <div id="toast"></div>
 
 <script src="content.js?v=312"></script>
-<script src="app.js?v=312"></script>
+<script src="app.js?v=320"></script>
 </body>
 </html>

@@ -11,13 +11,14 @@ function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 function defaults(){return{
   settings:{ieltsDate:'2026-09-19',cycleStart:todayISO(),ritualSteps:DEF_RITUAL.slice(),
     template:defaultTemplate(),apiKey:'',model:'claude-sonnet-5'},
-  days:{},vocab:[],hiddenTerms:[]
+  days:{},vocab:[],hiddenTerms:[],writings:[]
 };}
 function load(){
   try{const raw=localStorage.getItem(K);if(raw){S=Object.assign(defaults(),JSON.parse(raw));
     if(!S.settings.ritualSteps||!S.settings.ritualSteps.length)S.settings.ritualSteps=DEF_RITUAL.slice();
     if(!Array.isArray(S.vocab))S.vocab=[];
     if(!Array.isArray(S.hiddenTerms))S.hiddenTerms=[];
+    if(!Array.isArray(S.writings))S.writings=[];
     migrate();
     return;}}catch(e){}
   S=defaults();save();
@@ -509,6 +510,131 @@ function renderLexicon(){
   });
 }
 
+/* ================= THE WRITING DESK ================= */
+const WTYPES={t2:'Task 2 essay',t1:'Task 1 report',letter:'Letter',free:'Free practice'};
+function wSorted(){
+  return S.writings.slice().sort((a,b)=>b.date===a.date?(b.created||0)-(a.created||0):(b.date>a.date?1:-1));
+}
+function bandChart(){
+  const es=S.writings.filter(w=>w.band).slice().sort((a,b)=>a.date>b.date?1:-1).slice(-20);
+  if(es.length<2)return'';
+  const W=300,H=100,PX=12,PY=14,lo=4,hi=9;
+  const xs=i=>PX+i*(W-2*PX)/(es.length-1);
+  const ys=b=>H-PY-(Math.min(hi,Math.max(lo,+b))-lo)/(hi-lo)*(H-2*PY);
+  const yT=ys(7);
+  const pts=es.map((e,i)=>xs(i).toFixed(1)+','+ys(e.band).toFixed(1)).join(' ');
+  const dots=es.map((e,i)=>'<circle cx="'+xs(i).toFixed(1)+'" cy="'+ys(e.band).toFixed(1)+'" r="3" fill="#7A1F2B"/>').join('');
+  return'<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:100px">'+
+    '<line x1="0" y1="'+yT+'" x2="'+W+'" y2="'+yT+'" stroke="#3E6B4F" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>'+
+    '<text x="'+(W-4)+'" y="'+(yT-4)+'" text-anchor="end" font-size="9" fill="#3E6B4F">target 7.0</text>'+
+    '<polyline points="'+pts+'" fill="none" stroke="#7A1F2B" stroke-width="1.5"/>'+dots+'</svg>';
+}
+function renderWriting(){
+  const ws=wSorted();
+  const banded=ws.filter(w=>w.band);
+  const last5=banded.slice(0,5).map(w=>+w.band);
+  const avg=last5.length?(last5.reduce((a,b)=>a+b,0)/last5.length).toFixed(1):'—';
+  const best=banded.length?Math.max.apply(null,banded.map(w=>+w.band)).toFixed(1):'—';
+  let h='<div class="jhero"><span class="k ox">Corrected outside · archived here</span>'+
+    '<div class="arttitle serif">The Writing Desk</div>'+
+    '<div class="artsub">'+ws.length+' pieces filed · recent average '+avg+' · best '+best+'</div>'+
+    bandChart()+
+    '<div style="margin-top:14px"><button class="btn" id="wNew">+ File a new piece</button></div></div>';
+  if(!ws.length){
+    h+='<div class="sect"><p class="keynote">Nothing filed yet. Write in your editor, get it corrected, then archive the piece here: your text, the band, the feedback and the improved version. Months from now, this page is the proof of the climb.</p></div>';
+  }else{
+    let mon='';
+    ws.forEach(w=>{
+      const mkey=w.date.slice(0,7);
+      if(mkey!==mon){
+        if(mon)h+='</div>';
+        mon=mkey;
+        const cnt=ws.filter(x=>x.date.slice(0,7)===mkey).length;
+        const mb=ws.filter(x=>x.date.slice(0,7)===mkey&&x.band);
+        const mavg=mb.length?(mb.reduce((a,b)=>a+ +b.band,0)/mb.length).toFixed(1):'—';
+        h+='<div class="wmonth">'+MONS[+mkey.slice(5,7)-1]+' '+mkey.slice(0,4)+
+           '<small>'+cnt+' piece'+(cnt>1?'s':'')+' · avg '+mavg+'</small></div><div>';
+      }
+      h+='<button class="wentry" data-id="'+esc(w.id)+'">'+
+        '<span class="wband">'+(w.band?(+w.band).toFixed(1):'—')+'<small>band</small></span>'+
+        '<span class="winfo"><span class="wprompt">'+esc(w.prompt||'(no prompt recorded)')+'</span>'+
+        '<span class="wmeta">'+fmtShort(w.date)+' · <span class="'+(w.type==='t1'?'t1':'t2')+'">'+(WTYPES[w.type]||w.type)+'</span>'+
+        (w.better?' · improved ✓':'')+'</span></span></button>';
+    });
+    h+='</div>';
+  }
+  $('#wmain').innerHTML=h;
+  $('#wNew').onclick=()=>openWritingForm(null);
+  $$('#wmain .wentry').forEach(b=>b.onclick=()=>openWritingView(b.dataset.id));
+}
+function openWritingView(id){
+  const w=S.writings.find(x=>x.id===id);if(!w)return;
+  const crits=['tr','cc','lr','gra'].filter(c=>w[c]);
+  openSheet('<div class="sh"><div><span class="k ox">'+fmtShort(w.date)+' · '+(WTYPES[w.type]||w.type)+'</span>'+
+    '<div class="arttitle" style="font-size:19px;margin-top:6px">'+esc(w.prompt||'(no prompt)')+'</div>'+
+    (w.band?'<div class="fbband" style="margin-top:6px">Band '+(+w.band).toFixed(1)+'</div>':'')+
+    (crits.length?'<div class="critline">'+crits.map(c=>'<span>'+c.toUpperCase()+' <b>'+w[c]+'</b></span>').join('')+'</div>':'')+
+    '</div><button class="shx" id="shClose">✕</button></div>'+
+    '<div class="wview">'+
+    '<h4>My text</h4><div class="artbody">'+String(w.text||'').split(/\n+/).map(p=>'<p>'+esc(p)+'</p>').join('')+'</div>'+
+    (w.fb?'<h4>Feedback received</h4><div class="artbody" style="font-family:Inter,sans-serif;font-size:13.5px">'+String(w.fb).split(/\n+/).map(p=>'<p>'+esc(p)+'</p>').join('')+'</div>':'')+
+    (w.better?'<h4>Improved version</h4><div class="artbody">'+String(w.better).split(/\n+/).map(p=>'<p>'+esc(p)+'</p>').join('')+'</div>':'')+
+    '</div>'+
+    '<div class="iactions" style="margin-top:20px"><button class="btn line" id="wEdit">Edit</button>'+
+    '<button class="btn dim" id="wDel" style="border-color:var(--ox);color:var(--ox)">Delete</button></div>');
+  $('#shClose').onclick=closeSheet;
+  $('#wEdit').onclick=()=>openWritingForm(id);
+  $('#wDel').onclick=()=>{
+    if(!confirm('Delete this piece permanently?'))return;
+    S.writings=S.writings.filter(x=>x.id!==id);save();closeSheet();renderWriting();
+  };
+}
+function openWritingForm(id){
+  const w=id?S.writings.find(x=>x.id===id):null;
+  const v=f=>w&&w[f]?esc(w[f]):'';
+  const bandOpts=b=>{let o='<option value="">—</option>';for(let x=4;x<=9;x+=0.5)o+='<option value="'+x.toFixed(1)+'"'+(w&&+w[b]===x?' selected':'')+'>'+x.toFixed(1)+'</option>';return o;};
+  openSheet('<div class="sh"><div class="arttitle" style="font-size:21px">'+(w?'Edit piece':'File a new piece')+'</div>'+
+    '<button class="shx" id="shClose">✕</button></div>'+
+    '<div class="wform">'+
+    '<div style="display:flex;gap:10px"><div style="flex:1"><label>Date</label><input type="date" id="w_date" value="'+(w?w.date:todayKey())+'"></div>'+
+    '<div style="flex:1"><label>Type</label><select id="w_type">'+
+    Object.keys(WTYPES).map(t=>'<option value="'+t+'"'+(w&&w.type===t?' selected':'')+'>'+WTYPES[t]+'</option>').join('')+'</select></div></div>'+
+    '<label>Prompt / question</label><textarea id="w_prompt" class="small" placeholder="Paste the question you answered">'+v('prompt')+'</textarea>'+
+    '<label>My text</label><textarea id="w_text" placeholder="Paste what you wrote">'+v('text')+'</textarea>'+
+    '<label>Overall band (from the correction)</label><select id="w_band">'+bandOpts('band')+'</select>'+
+    '<label>Criteria (optional)</label><div class="bandsrow">'+
+    '<div><input id="w_tr" placeholder="TR" value="'+v('tr')+'"></div>'+
+    '<div><input id="w_cc" placeholder="CC" value="'+v('cc')+'"></div>'+
+    '<div><input id="w_lr" placeholder="LR" value="'+v('lr')+'"></div>'+
+    '<div><input id="w_gra" placeholder="GRA" value="'+v('gra')+'"></div></div>'+
+    '<label>Feedback & tips received</label><textarea id="w_fb" placeholder="Paste the feedback">'+v('fb')+'</textarea>'+
+    '<label>Improved version</label><textarea id="w_better" placeholder="Paste the corrected / improved text">'+v('better')+'</textarea>'+
+    '<div class="iactions" style="margin-top:18px"><button class="btn" id="wSave">'+(w?'Save changes':'File it')+'</button>'+
+    '<button class="btn dim" id="wCancel">Cancel</button></div></div>');
+  $('#shClose').onclick=closeSheet;
+  $('#wCancel').onclick=closeSheet;
+  $('#wSave').onclick=()=>{
+    const text=$('#w_text').value.trim();
+    if(!text){toast('Paste your text first — that is the piece.');return;}
+    const obj={
+      id:w?w.id:'w'+Date.now().toString(36),
+      created:w?w.created:Date.now(),
+      date:$('#w_date').value||todayKey(),
+      type:$('#w_type').value,
+      prompt:$('#w_prompt').value.trim(),
+      text,
+      band:$('#w_band').value,
+      tr:$('#w_tr').value.trim(),cc:$('#w_cc').value.trim(),
+      lr:$('#w_lr').value.trim(),gra:$('#w_gra').value.trim(),
+      fb:$('#w_fb').value.trim(),
+      better:$('#w_better').value.trim()
+    };
+    if(w)Object.assign(w,obj);else S.writings.push(obj);
+    save();closeSheet();renderWriting();
+    toast(w?'Piece updated.':'Filed. The archive grows.');
+  };
+}
+
 /* ================= RENDER · EVENING ESSAY ================= */
 function renderEssay(day){
   const es=day.essay;
@@ -859,13 +985,16 @@ function showView(v){
   $('#vToday').classList.toggle('hidden',v!=='today');
   $('#vJourney').classList.toggle('hidden',v!=='journey');
   $('#vLexicon').classList.toggle('hidden',v!=='lexicon');
+  $('#vWriting').classList.toggle('hidden',v!=='writing');
   $('#vSettings').classList.toggle('hidden',v!=='settings');
   $('#nav').classList.toggle('hidden',v==='settings');
   $('#navToday').classList.toggle('on',v==='today');
   $('#navJourney').classList.toggle('on',v==='journey');
   $('#navLex').classList.toggle('on',v==='lexicon');
+  $('#navWrite').classList.toggle('on',v==='writing');
   if(v==='journey')renderJourney();
   if(v==='lexicon')renderLexicon();
+  if(v==='writing')renderWriting();
   if(v==='today')renderAll();
   window.scrollTo(0,0);
 }
@@ -893,6 +1022,7 @@ function init(){
   $('#navToday').onclick=()=>showView('today');
   $('#navJourney').onclick=()=>showView('journey');
   $('#navLex').onclick=()=>showView('lexicon');
+  $('#navWrite').onclick=()=>showView('writing');
   $('#dPrev').onclick=()=>{if(diffDays(S.settings.cycleStart,VK)>0){VK=addDays(VK,-1);editDay=false;renderAll();}};
   $('#dNext').onclick=()=>{if(VK!==todayKey()){VK=addDays(VK,1);editDay=false;renderAll();}};
   $('#sIelts').onchange=e=>{S.settings.ieltsDate=e.target.value;save();};
