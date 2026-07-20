@@ -798,7 +798,7 @@ function renderJourney(){
     '<div class="kpi"><b>'+stk+'<small> days</small></b><span>Current streak · best '+bst+'</span></div>'+
     '<div class="kpi"><b>'+blocksDone+'</b><span>Blocks completed</span></div>'+
     '<div class="kpi"><b>'+fullDays+'</b><span>Perfect days</span></div>'+
-    '<div class="kpi"><b>'+essays+'</b><span>Essays filed</span></div>'+
+    '<div class="kpi"><b>'+S.writings.length+'</b><span>Pieces at the Desk</span></div>'+
     '<div class="kpi"><b>'+words+'</b><span>Words banked</span></div>'+
     '</div></div>';
 
@@ -814,8 +814,7 @@ function renderJourney(){
   h+='<div class="sect"><div class="shead"><span class="k">Disciplines</span></div>';
   [['Study','var(--navy)',keys.filter(k=>S.days[k]&&studyDone(S.days[k])).length],
    ['Training','var(--ok)',keys.filter(k=>{const d=S.days[k];return d&&d.tpl.some(b=>b.type==='training'&&d.checks[b.id]==='done');}).length],
-   ['Ritual','var(--gold)',ritKept],
-   ['Essays','var(--ox)',essays]].forEach(([lb,cl,ct])=>{
+   ['Ritual','var(--gold)',ritKept]].forEach(([lb,cl,ct])=>{
     const p=keys.length?Math.round(ct/keys.length*100):0;
     h+='<div class="frow2"><span class="fl" style="color:'+cl+'">'+lb+'</span>'+
       '<div class="bar"><i style="width:'+p+'%;background:'+cl+'"></i></div>'+
@@ -1026,7 +1025,7 @@ function showView(v){
 function renderAll(){
   const day=ensureDay(VK);
   renderMast();renderDayNav();renderCover(day);renderMorning(day);
-  renderIntention(day);renderRitual(day);renderDaywork(day);renderVocab();renderEssay(day);
+  renderIntention(day);renderRitual(day);renderDaywork(day);renderVocab();
   $('#footline').textContent=FOOTLINES[Math.max(0,dayN(VK))%FOOTLINES.length];
 }
 
