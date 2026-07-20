@@ -309,6 +309,64 @@ const FOOTLINES=[
 'Tomorrow’s edition is earned tonight.'
 ];
 
+/* ============================================================
+   THE WRITING WORKSHOP · a Task 2 course from zero
+   ============================================================ */
+const WORKSHOP=[
+{t:'The Blueprint',s:'Every band-7 essay is the same house',
+html:'<p>Before words, structure. An IELTS Task 2 essay is <b>four paragraphs, ~250–280 words, 40 minutes</b>. Always. The examiner has seen this house ten thousand times — your job is not to surprise them, it is to build it cleanly.</p>'+
+'<div class="planbox"><b>The house.</b><br>1 · Introduction — 2 sentences (~40 words)<br>2 · Body paragraph 1 — 4–5 sentences (~90 words)<br>3 · Body paragraph 2 — 4–5 sentences (~90 words)<br>4 · Conclusion — 1–2 sentences (~30 words)</div>'+
+'<p>First skill: <b>read the question and find its type</b>, because the type decides what your paragraphs must do:</p>'+
+'<p><b>Opinion</b> (“To what extent do you agree?”) → your position + two reasons.<br><b>Discussion</b> (“Discuss both views and give your opinion”) → one view per body, opinion visible.<br><b>Advantages/disadvantages</b> → one side per body, verdict at the end.<br><b>Problem/solution</b> → problems in body 1, solutions in body 2.<br><b>Double question</b> → question 1 in body 1, question 2 in body 2.</p>'+
+'<p class="keynote">Golden rule: every part of the question must be answered. Half the question answered = Task Response capped at 5.</p>'},
+
+{t:'The Introduction',s:'Two sentences. Never more.',
+html:'<p>The introduction has exactly two jobs, one sentence each:</p>'+
+'<div class="planbox"><b>Sentence 1 — paraphrase the question.</b> Say the question again in your own words. Never copy it.<br><b>Sentence 2 — answer it (thesis).</b> State your position and preview your reasons.</div>'+
+'<p><b>How to paraphrase</b> — three moves, use any two: swap synonyms (<i>children → young people · important → essential · many people think → it is widely believed</i>); change the word form (<i>succeed → success</i>); flip the structure (<i>Cities are better than villages → Living in an urban area offers more than rural life</i>).</p>'+
+'<p><b>Sentence-2 templates by type:</b></p>'+
+'<p>Opinion: <i>“I strongly agree with this view, primarily because A and B.”</i><br>Discussion: <i>“While there is some merit in X, I side with those who argue Y.”</i><br>Adv/disadv: <i>“Although this trend has drawbacks, I believe the benefits outweigh them.”</i></p>'+
+'<div class="planbox"><b>Worked example.</b> Question: “Some people believe universities should prepare students for employment. To what extent do you agree?”<br><br><i>It is often argued that the main duty of higher education is to make graduates employable. I largely agree, primarily because study is expensive and because the job market now demands specific skills.</i><br><br>Done. Forty words, both jobs complete.</div>'},
+
+{t:'The Body Paragraph — PEEL',s:'One idea per paragraph, four sentences to prove it',
+html:'<p>Body paragraphs fail when they are a soup of half-ideas. The cure is <b>PEEL</b> — each letter is one sentence with a template:</p>'+
+'<div class="planbox"><b>P — Point.</b> The topic sentence; the paragraph’s only idea.<br><i>“The main reason why … is that …” / “One clear advantage of … is …”</i><br><br><b>E — Explain.</b> Why is the point true? Go one level deeper.<br><i>“This is because …” / “In other words, …” / “Without this, …”</i><br><br><b>E — Example.</b> Make it concrete: a country, a study, a common situation.<br><i>“A case in point is …” / “For instance, in Brazil, …”</i><br><br><b>L — Link.</b> Close the loop: consequence or mini-conclusion.<br><i>“As a result, …” / “This is why …”</i></div>'+
+'<div class="planbox"><b>Worked example</b> (same essay):<br><br><b>P</b> <i>The main reason why universities must think about employment is the cost of study.</i><br><b>E</b> <i>Because a degree often consumes years of savings or a large loan, families treat it as an investment that should pay for itself.</i><br><b>E</b> <i>In Brazil, for instance, many students choose engineering or medicine precisely because these courses lead to reliable careers.</i><br><b>L</b> <i>Consequently, a university that ignores the job market is failing the people who pay for it.</i></div>'+
+'<p class="keynote">Write PEEL vertically on your plan — P / E / E / L — and fill the four lines before writing prose. The paragraph then writes itself.</p>'},
+
+{t:'The Conclusion',s:'One move, no new ideas',
+html:'<p>The conclusion restates your answer with different words, and may add one closing thought (a recommendation or prediction). It must never introduce a new argument — new ideas in the conclusion actively lose points.</p>'+
+'<div class="planbox"><b>Template 1 (safe):</b> <i>“In conclusion, I believe that [position restated], both because [A in new words] and [B in new words].”</i><br><br><b>Template 2 (with closing thought):</b> <i>“In conclusion, [position]. Unless universities [recommendation], graduates will [prediction].”</i></div>'+
+'<div class="planbox"><b>Worked example:</b> <i>In conclusion, although knowledge has value in itself, I maintain that preparing students for working life must remain a central mission of higher education, given its cost and the demands of the modern economy.</i></div>'+
+'<p class="keynote">If you are short of time, a one-sentence conclusion beats no conclusion by a full band. Never skip it.</p>'},
+
+{t:'The Phrase Bank',s:'Forty keys that open every essay',
+html:'<p>Memorise these in groups. Use two or three per paragraph — not ten. Precision beats decoration.</p>'+
+'<p><b>Giving your opinion</b><br><i>I would argue that · From my perspective · I am convinced that · It seems to me that</i></p>'+
+'<p><b>Introducing others’ views</b><br><i>It is often argued that · It is widely believed that · Advocates claim that · Critics point out that</i></p>'+
+'<p><b>Adding a point</b><br><i>Moreover · Furthermore · In addition to this · Equally important is</i></p>'+
+'<p><b>Contrasting</b><br><i>However · Whereas · On the other hand · In stark contrast · Despite this</i></p>'+
+'<p><b>Conceding before you counter</b><br><i>Admittedly · While it is true that … · Even though · Notwithstanding [noun]</i></p>'+
+'<p><b>Cause and result</b><br><i>Consequently · As a result · This leads to · Hence · Thereby [-ing]</i></p>'+
+'<p><b>Giving examples</b><br><i>A case in point is · For instance · To illustrate · This is evident in</i></p>'+
+'<p><b>Concluding</b><br><i>In conclusion · On balance · Ultimately · Taking everything into account</i></p>'+
+'<p class="keynote">These live in your Lexicon too — retire each one only when it appears in your essays without being invited.</p>'},
+
+{t:'The 40-Minute Build',s:'The same procedure, every single time',
+html:'<div class="planbox"><b>Minutes 0–5 · Plan (never skip).</b> Read the question twice. Underline the type and BOTH parts. Write: your position + idea for body 1 + idea for body 2 + one example each. Five lines, telegraphic.<br><br><b>Minutes 5–10 · Introduction.</b> Paraphrase + thesis. Two sentences, then stop.<br><br><b>Minutes 10–20 · Body 1.</b> PEEL, four sentences.<br><br><b>Minutes 20–30 · Body 2.</b> PEEL, four sentences.<br><br><b>Minutes 30–34 · Conclusion.</b> One template, filled.<br><br><b>Minutes 34–40 · The check.</b> Read once, hunting only for your known errors.</div>'+
+'<p><b>The Brazilian checklist</b> — the six errors that cost us most:</p>'+
+'<p>1 · <b>Articles.</b> “<i>The</i> education is important” → “Education is important”. Abstract nouns take no article.<br>2 · <b>Plural s.</b> “Many student <i>think</i>…” → “Many student<b>s</b> think”. Check every <i>many/most/some + noun</i>.<br>3 · <b>Comma splice.</b> “Cities are crowded<b>,</b> people prefer them” → use <i>. However,</i> or <i>; however,</i> or <i>because</i>.<br>4 · <b>“In my point of view”</b> → <i>In my view / From my point of view</i>.<br>5 · <b>Make × do.</b> <i>make a decision, make progress · do research, do harm</i>.<br>6 · <b>“People that”</b> → prefer <i>people who</i> in formal writing.</p>'+
+'<p class="keynote">Keep your personal error log at the Writing Desk: every corrected essay feeds tomorrow’s minute-34 check.</p>'},
+
+{t:'A Model, Dissected',s:'Read one essay the way an examiner does',
+html:'<p class="keynote">Question: “Some people believe that universities should focus on preparing students for employment, while others think their purpose is knowledge for its own sake. Discuss both views and give your opinion.” (Discussion type → one view per body + my position throughout.)</p>'+
+'<div class="planbox"><b>INTRODUCTION — paraphrase + thesis</b><br><i>Whether higher education exists to fill jobs or to pursue learning as an end in itself remains a divisive question. While both missions have merit, I would argue that employability must come first for most students today.</i></div>'+
+'<div class="planbox"><b>BODY 1 — the view I partly accept (PEEL)</b><br><i>Those who defend knowledge for its own sake make a compelling point about the purpose of a university. Learning to think rigorously, they argue, produces citizens rather than merely workers, and this benefit outlasts any particular career. The great scientific breakthroughs, from penicillin to the internet, frequently emerged from curiosity-driven research with no commercial goal. Admittedly, a society that funds only “useful” study risks discovering nothing new at all.</i></div>'+
+'<div class="planbox"><b>BODY 2 — my stronger view (PEEL + contrast)</b><br><i>Nevertheless, for the majority of students, university is a costly investment that must lead somewhere concrete. Degrees consume years and considerable money, and most families simply cannot treat them as an intellectual luxury. In Brazil, for instance, enrolment in courses with clear career paths has grown precisely because graduates need employment, not only enlightenment. Consequently, institutions that ignore the labour market fail the very people they claim to serve.</i></div>'+
+'<div class="planbox"><b>CONCLUSION — restate, nothing new</b><br><i>In conclusion, although pure scholarship deserves protection, I believe preparing students for working life is the more urgent duty of universities, given the cost of study and the realities graduates face.</i></div>'+
+'<p>Count what you just saw: 4 paragraphs · 262 words · one idea per body · <i>compelling, admittedly, nevertheless, consequently, in conclusion</i> all doing quiet work. Nothing exotic. That is a band 7.</p>'}
+];
+
 /* ---------- default weekly template ---------- */
 function wdBase(){return[
  {id:'rit', start:'06:15',end:'06:45',name:'Morning Ritual',type:'routine'},

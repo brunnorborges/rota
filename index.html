@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="The London Review">
 <meta name="theme-color" content="#F7F4EE">
-<title>The London Review · Road to Band 7.0</title><!-- v3.2.0 -->
+<title>The London Review · Road to Band 7.0</title><!-- v3.3.0 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -274,6 +274,22 @@ main{max-width:600px;margin:0 auto;padding:0 18px calc(86px + env(safe-area-inse
 .critline{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:6px}
 .critline b{font-family:'Fraunces',Georgia,serif;color:var(--ink);font-size:14px}
 
+/* ---------- workshop ---------- */
+.wk{border-bottom:1px solid var(--line)}
+.wk summary{list-style:none;cursor:pointer;padding:18px 0;display:flex;gap:14px;align-items:baseline}
+.wk summary::-webkit-details-marker{display:none}
+.wk .wknum{font-family:'Fraunces',Georgia,serif;font-size:15px;color:var(--ox);flex:0 0 34px}
+.wk .wkt{flex:1}
+.wk .wkt b{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:600;display:block}
+.wk .wkt i{font-family:'Fraunces',Georgia,serif;font-size:13.5px;color:var(--ink2)}
+.wk .wkarr{color:var(--line2);font-size:14px;transition:transform .2s}
+.wk[open] .wkarr{transform:rotate(90deg);color:var(--ox)}
+.wkbody{padding:0 0 22px;font-size:14.5px;line-height:1.65}
+.wkbody p{margin:0 0 12px}
+.wkbody .planbox{margin:14px 0;line-height:1.7}
+.wkbody i{font-family:'Fraunces',Georgia,serif}
+.wkbody b{font-weight:600}
+
 /* ---------- settings ---------- */
 .frow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
 .frow label{font-size:14px}
@@ -366,6 +382,11 @@ textarea#ioArea{width:100%;height:110px;font-size:11px;font-family:ui-monospace,
   <main id="wmain"></main>
 </div>
 
+<!-- ============ WRITING WORKSHOP ============ -->
+<div id="vWorkshop" class="hidden">
+  <main id="wkmain"></main>
+</div>
+
 <!-- ============ SETTINGS ============ -->
 <div id="vSettings" class="hidden">
   <main>
@@ -430,7 +451,7 @@ textarea#ioArea{width:100%;height:110px;font-size:11px;font-family:ui-monospace,
 <div id="sheet" class="sheet hidden"></div>
 <div id="toast"></div>
 
-<script src="content.js?v=312"></script>
-<script src="app.js?v=320"></script>
+<script src="content.js?v=330"></script>
+<script src="app.js?v=330"></script>
 </body>
 </html>

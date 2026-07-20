@@ -539,7 +539,8 @@ function renderWriting(){
     '<div class="arttitle serif">The Writing Desk</div>'+
     '<div class="artsub">'+ws.length+' pieces filed · recent average '+avg+' · best '+best+'</div>'+
     bandChart()+
-    '<div style="margin-top:14px"><button class="btn" id="wNew">+ File a new piece</button></div></div>';
+    '<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="wNew">+ File a new piece</button>'+
+    '<button class="btn line" id="wWorkshop">The Workshop · learn the craft</button></div></div>';
   if(!ws.length){
     h+='<div class="sect"><p class="keynote">Nothing filed yet. Write in your editor, get it corrected, then archive the piece here: your text, the band, the feedback and the improved version. Months from now, this page is the proof of the climb.</p></div>';
   }else{
@@ -565,7 +566,27 @@ function renderWriting(){
   }
   $('#wmain').innerHTML=h;
   $('#wNew').onclick=()=>openWritingForm(null);
+  $('#wWorkshop').onclick=()=>showView('workshop');
   $$('#wmain .wentry').forEach(b=>b.onclick=()=>openWritingView(b.dataset.id));
+}
+
+/* ================= THE WRITING WORKSHOP ================= */
+function renderWorkshop(){
+  const ROM=['I','II','III','IV','V','VI','VII','VIII'];
+  let h='<div class="jhero"><span class="k ox">A course from zero · consult before every essay</span>'+
+    '<div class="arttitle serif">The Writing Workshop</div>'+
+    '<div class="artsub">Structure first, words second, style last. Seven short modules — read one per day, or all before your next essay. Band 7 is a procedure, not a talent.</div>'+
+    '<div style="margin-top:12px"><button class="btn line" id="wkBack">&#8592; Back to the Writing Desk</button></div></div>';
+  WORKSHOP.forEach((m,i)=>{
+    h+='<details class="wk"'+(i===0?' open':'')+'><summary>'+
+      '<span class="wknum">'+ROM[i]+'</span>'+
+      '<span class="wkt"><b>'+esc(m.t)+'</b><i>'+esc(m.s)+'</i></span>'+
+      '<span class="wkarr">&#9656;</span></summary>'+
+      '<div class="wkbody">'+m.html+'</div></details>';
+  });
+  h+='<div style="text-align:center;padding:26px 0 10px"><div class="k">Read · plan · PEEL · check — then file the piece at the Desk</div></div>';
+  $('#wkmain').innerHTML=h;
+  $('#wkBack').onclick=()=>showView('writing');
 }
 function openWritingView(id){
   const w=S.writings.find(x=>x.id===id);if(!w)return;
@@ -643,7 +664,7 @@ function renderEssay(day){
     '<div class="esswrap">'+
     '<span class="esscat">'+esc(pr.c)+' · Writing Task 2 style</span>'+
     '<div class="essq">'+esc(pr.q)+'</div>'+
-    '<div class="essmeta">Two or three paragraphs · aim for 120–180 words · close the day with it</div>';
+    '<div class="essmeta">Two or three paragraphs · aim for 120–180 words · <button class="k navy" id="essWk" style="font-size:12px">Open the Workshop ↗</button></div>';
   if(!es.done){
     h+='<textarea id="essIn" placeholder="Plan for one minute, then write…">'+esc(es.text||'')+'</textarea>'+
       '<div class="esscount" id="essCount"></div>'+
@@ -660,6 +681,7 @@ function renderEssay(day){
   }
   h+=renderFb(es,'essay')+'</div>';
   $('#essay').innerHTML=h;
+  const ewk=$('#essWk');if(ewk)ewk.onclick=()=>showView('workshop');
   const ta=$('#essIn');
   if(ta){
     const cnt=()=>{$('#essCount').textContent=wordCount(ta.value)+' words';};
@@ -986,15 +1008,17 @@ function showView(v){
   $('#vJourney').classList.toggle('hidden',v!=='journey');
   $('#vLexicon').classList.toggle('hidden',v!=='lexicon');
   $('#vWriting').classList.toggle('hidden',v!=='writing');
+  $('#vWorkshop').classList.toggle('hidden',v!=='workshop');
   $('#vSettings').classList.toggle('hidden',v!=='settings');
   $('#nav').classList.toggle('hidden',v==='settings');
   $('#navToday').classList.toggle('on',v==='today');
   $('#navJourney').classList.toggle('on',v==='journey');
   $('#navLex').classList.toggle('on',v==='lexicon');
-  $('#navWrite').classList.toggle('on',v==='writing');
+  $('#navWrite').classList.toggle('on',v==='writing'||v==='workshop');
   if(v==='journey')renderJourney();
   if(v==='lexicon')renderLexicon();
   if(v==='writing')renderWriting();
+  if(v==='workshop')renderWorkshop();
   if(v==='today')renderAll();
   window.scrollTo(0,0);
 }
