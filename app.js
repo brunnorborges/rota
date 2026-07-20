@@ -1014,7 +1014,8 @@ function showView(v){
   $('#navToday').classList.toggle('on',v==='today');
   $('#navJourney').classList.toggle('on',v==='journey');
   $('#navLex').classList.toggle('on',v==='lexicon');
-  $('#navWrite').classList.toggle('on',v==='writing'||v==='workshop');
+  $('#navWrite').classList.toggle('on',v==='writing');
+  $('#navWk').classList.toggle('on',v==='workshop');
   if(v==='journey')renderJourney();
   if(v==='lexicon')renderLexicon();
   if(v==='writing')renderWriting();
@@ -1047,6 +1048,7 @@ function init(){
   $('#navJourney').onclick=()=>showView('journey');
   $('#navLex').onclick=()=>showView('lexicon');
   $('#navWrite').onclick=()=>showView('writing');
+  $('#navWk').onclick=()=>showView('workshop');
   $('#dPrev').onclick=()=>{if(diffDays(S.settings.cycleStart,VK)>0){VK=addDays(VK,-1);editDay=false;renderAll();}};
   $('#dNext').onclick=()=>{if(VK!==todayKey()){VK=addDays(VK,1);editDay=false;renderAll();}};
   $('#sIelts').onchange=e=>{S.settings.ieltsDate=e.target.value;save();};
