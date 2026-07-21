@@ -57,18 +57,36 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 function wordCount(t){return (String(t).trim().match(/\S+/g)||[]).length;}
 
 /* ================= DAY ================= */
+function lastSameWeekdayKey(key){
+  /* most recent PRIOR day with the same weekday that actually exists */
+  const dow=dowKey(key);
+  return Object.keys(S.days).filter(k=>k<key&&dowKey(k)===dow&&S.days[k].tpl&&S.days[k].tpl.length).sort().pop()||null;
+}
+function resolveTpl(key){
+  /* 1) the most recent same-weekday you customised → 2) the weekly template */
+  const dow=dowKey(key);
+  const prior=Object.keys(S.days)
+    .filter(k=>k<key&&dowKey(k)===dow&&S.days[k].custom&&S.days[k].tpl&&S.days[k].tpl.length)
+    .sort().pop();
+  if(prior)return JSON.parse(JSON.stringify(S.days[prior].tpl));
+  return JSON.parse(JSON.stringify(S.settings.template[dow]||[]));
+}
+function pruneChecks(day){
+  const ids=new Set((day.tpl||[]).map(b=>b.id));
+  Object.keys(day.checks||{}).forEach(id=>{if(!ids.has(id))delete day.checks[id];});
+}
 function maybeSyncTpl(day,key){
-  /* days the user has not touched follow the weekly template live */
+  /* untouched days follow the same-weekday inheritance live */
   if(day.custom)return;
   if(Object.keys(day.checks||{}).length)return;
-  const cur=JSON.stringify(S.settings.template[dowKey(key)]||[]);
-  if(JSON.stringify(day.tpl)!==cur){day.tpl=JSON.parse(cur);save();}
+  const want=JSON.stringify(resolveTpl(key));
+  if(JSON.stringify(day.tpl)!==want){day.tpl=JSON.parse(want);save();}
 }
 function ensureDay(key){
   if(S.days[key]){maybeSyncTpl(S.days[key],key);return S.days[key];}
   const n=Math.max(1,dayN(key));
   const day={
-    tpl:JSON.parse(JSON.stringify(S.settings.template[dowKey(key)]||[])),
+    tpl:resolveTpl(key),
     checks:{},
     ritual:S.settings.ritualSteps.map(t=>({t,done:false})),
     obstacle:'',plan:'',
@@ -323,8 +341,14 @@ function renderDaywork(day){
         '<button class="tebtn del" data-a="del" data-i="'+i+'">✕</button>'+
         '</div></div>';
     });
+    const ykey=addDays(VK,-1), yHas=S.days[ykey]&&S.days[ykey].tpl&&S.days[ykey].tpl.length;
+    const lwk=lastSameWeekdayKey(VK);
     h+='<div id="dwactions"><button class="btn line" id="dwAdd">+ Add block</button>'+
-      '<button class="btn dim" id="dwSort">Sort by time</button></div>';
+      '<button class="btn dim" id="dwSort">Sort by time</button>'+
+      (yHas?'<button class="btn dim" id="dwYday">Copy yesterday</button>':'')+
+      (lwk?'<button class="btn dim" id="dwLastWd">Copy last '+DOWS[parseKey(VK).getDay()]+'</button>':'')+
+      '</div>'+
+      '<p class="keynote">New days copy your last '+DOWS[parseKey(VK).getDay()]+' automatically. This week, use “Copy yesterday” to carry a day forward.</p>';
   }
   $('#daywork').innerHTML=h;
   $('#dwEdit').onclick=()=>{editDay=!editDay;renderDaywork(day);};
@@ -352,6 +376,20 @@ function renderDaywork(day){
     };
     $('#dwSort').onclick=()=>{
       day.tpl.sort((a,b)=>mins(a.start)-mins(b.start));day.custom=true;save();renderDaywork(day);
+    };
+    const dy=$('#dwYday');
+    if(dy)dy.onclick=()=>{
+      const src=S.days[addDays(VK,-1)];if(!src)return;
+      if(!confirm('Replace today’s schedule with yesterday’s ('+fmtShort(addDays(VK,-1))+')?'))return;
+      day.tpl=JSON.parse(JSON.stringify(src.tpl));pruneChecks(day);day.custom=true;save();renderDaywork(day);renderCover(day);
+      toast('Yesterday’s schedule copied.');
+    };
+    const dl=$('#dwLastWd');
+    if(dl)dl.onclick=()=>{
+      const src=lastSameWeekdayKey(VK);if(!src)return;
+      if(!confirm('Replace with last '+DOWS[parseKey(VK).getDay()]+'’s schedule ('+fmtShort(src)+')?'))return;
+      day.tpl=JSON.parse(JSON.stringify(S.days[src].tpl));pruneChecks(day);day.custom=true;save();renderDaywork(day);renderCover(day);
+      toast('Last '+DOWS[parseKey(VK).getDay()]+'’s schedule copied.');
     };
   }
 }
