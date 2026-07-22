@@ -554,18 +554,32 @@ function wSorted(){
   return S.writings.slice().sort((a,b)=>b.date===a.date?(b.created||0)-(a.created||0):(b.date>a.date?1:-1));
 }
 function bandChart(){
-  const es=S.writings.filter(w=>w.band).slice().sort((a,b)=>a.date>b.date?1:-1).slice(-20);
-  if(es.length<2)return'';
-  const W=300,H=100,PX=12,PY=14,lo=4,hi=9;
-  const xs=i=>PX+i*(W-2*PX)/(es.length-1);
+  const all=S.writings.filter(w=>w.band).slice().sort((a,b)=>a.date>b.date?1:-1);
+  if(all.length<2)return'';
+  const W=300,H=110,PX=12,PY=14,lo=4,hi=9;
+  /* shared x-axis over all banded pieces, in chronological order */
+  const xs=i=>all.length===1?W/2:PX+i*(W-2*PX)/(all.length-1);
   const ys=b=>H-PY-(Math.min(hi,Math.max(lo,+b))-lo)/(hi-lo)*(H-2*PY);
   const yT=ys(7);
-  const pts=es.map((e,i)=>xs(i).toFixed(1)+','+ys(e.band).toFixed(1)).join(' ');
-  const dots=es.map((e,i)=>'<circle cx="'+xs(i).toFixed(1)+'" cy="'+ys(e.band).toFixed(1)+'" r="3" fill="#7A1F2B"/>').join('');
-  return'<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:100px">'+
+  const series=(type,color)=>{
+    const pts=all.map((e,i)=>({e,i})).filter(o=>o.e.type===type);
+    if(!pts.length)return'';
+    const line=pts.length>1?'<polyline points="'+pts.map(o=>xs(o.i).toFixed(1)+','+ys(o.e.band).toFixed(1)).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="1.5"/>':'';
+    const dots=pts.map(o=>'<circle cx="'+xs(o.i).toFixed(1)+'" cy="'+ys(o.e.band).toFixed(1)+'" r="3" fill="'+color+'"/>').join('');
+    return line+dots;
+  };
+  const other=all.filter(e=>e.type!=='t1'&&e.type!=='t2');
+  const otherSvg=other.length?other.map(e=>{const i=all.indexOf(e);return'<circle cx="'+xs(i).toFixed(1)+'" cy="'+ys(e.band).toFixed(1)+'" r="2.5" fill="#9A7B3F"/>';}).join(''):'';
+  const has1=all.some(e=>e.type==='t1'), has2=all.some(e=>e.type==='t2');
+  let legend='';
+  if(has2)legend+='<span style="color:#7A1F2B">&#9679; Task 2</span>';
+  if(has1)legend+='<span style="color:#22405C">&#9679; Task 1</span>';
+  if(other.length)legend+='<span style="color:#9A7B3F">&#9679; Other</span>';
+  return'<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:110px">'+
     '<line x1="0" y1="'+yT+'" x2="'+W+'" y2="'+yT+'" stroke="#3E6B4F" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>'+
     '<text x="'+(W-4)+'" y="'+(yT-4)+'" text-anchor="end" font-size="9" fill="#3E6B4F">target 7.0</text>'+
-    '<polyline points="'+pts+'" fill="none" stroke="#7A1F2B" stroke-width="1.5"/>'+dots+'</svg>';
+    series('t2','#7A1F2B')+series('t1','#22405C')+otherSvg+'</svg>'+
+    (legend?'<div class="legend" style="justify-content:center;gap:16px;margin-top:2px">'+legend+'</div>':'');
 }
 function renderWriting(){
   const ws=wSorted();
